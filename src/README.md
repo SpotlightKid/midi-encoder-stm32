@@ -1,0 +1,50 @@
+# README
+
+This example implements a USB MIDI device to demonstrate the use of the
+USB device stack. It implements the device configuration found in Appendix
+B of the Universal Serial Bus Device Class Definition for MIDI Devices.
+
+Attach two rotary encoders to send MIDI Control Change messages.
+
+The board will also react to identity request (or any other data sent to
+the board) by transmitting an identity message in reply.
+
+## Board connections
+
+| Port  | Function          | Description                               |
+| ----- | ----------------- | ----------------------------------------- |
+| `CN5` | `(USB_OTG_FS)`    | USB acting as device, connect to computer |
+| `PA0` | `Encoder 1 pin A` | Rotary encoder 1 pin A                    |
+| `PA1` | `Encoder 1 pin B` | Rotary encoder 1 pin B                    |
+| `PA2` | `Encoder 2 pin A` | Rotary encoder 1 pin A                    |
+| `PA3` | `Encoder 2 pin B` | Rotary encoder 2 pin B                    |
+| `GND` | `Encoder 1/2 GND` | Rotary encoder 1/2 ground pin             |
+
+## Testing
+
+To list midi devices, which should include this demo device
+
+    $ amidi -l
+    Dir Device    Name
+    IO  hw:2,0,0  MIDI demo MIDI 1
+    $
+
+To record events, while pushing the user button
+
+    $ amidi -d -p hw:2,0,0
+
+    B0 01 40   -- CC #1 (Modulation) value 0
+    B0 01 40   -- CC #1 (Modulation) value 1
+    B0 01 40^C
+    12 bytes read
+    $
+
+To query the system identity, note this dump matches `sysex_identity[]` in the
+source.
+
+    $ amidi -d -p hw:2,0,0 -s Sysexdump.syx
+
+    F0 7E 00 7D 66 66 51 19 00 00 01 00 F7
+    ^C
+    13 bytes read
+    $
