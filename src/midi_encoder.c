@@ -10,51 +10,15 @@
 #include <libopencm3/cm3/systick.h>
 #include <libopencm3/usb/usbd.h>
 
-#include "midi_encoder.h"
 #include "descriptors.h"
+#include "rotary_encoder.h"
+#include "midi_encoder.h"
+#include "hd44780.h"
 
 /* monotonically increasing number of milliseconds from reset
  * overflows every 49 days if you're wondering
  */
 volatile uint32_t system_millis;
-
-const struct RotaryEncoder encoder_tmpl = {
-    .port = GPIOA,
-    .pin_a = 0,
-    .pin_b = 1,
-    .min_value = 0,
-    .max_value = 127,
-    .pulses_per_dedent = 4,
-    .acceleration = 20,
-    .cur_accel = 0,
-    .readings = 0,
-    .counter = 0,
-    .value = 0,
-    .controller = 1,
-    .dirty = false
-};
-
-struct RotaryEncoder encoders[NUM_ENCODERS];
-
-static int8_t enc_states[] = {
-    0,  /* 00 00 */
-    -1, /* 00 01 */
-    1,  /* 00 10 */
-    0,  /* 00 11 */
-    1,  /* 01 00 */
-    0,  /* 01 01 */
-    0,  /* 01 10 */
-    -1, /* 01 11 */
-    -1, /* 10 00 */
-    0,  /* 10 01 */
-    0,  /* 10 10 */
-    1,  /* 10 11 */
-    0,  /* 11 00 */
-    1,  /* 11 01 */
-    -1, /* 11 10 */
-    0   /* 11 11 */
-};
-
 
 static char usb_serial_number[25]; /* 12 bytes of desig and a \0 */
 
@@ -66,6 +30,9 @@ static const char * usb_strings[] = {
 
 /* Buffer to be used for control requests. */
 uint8_t usbd_control_buffer[128];
+
+/* array of rotary encoder structs */
+RotaryEncoder encoders[NUM_ENCODERS];
 
 /* SysEx identity message, preformatted with correct USB framing information */
 const uint8_t sysex_identity[] = {
@@ -94,51 +61,7 @@ const uint8_t sysex_identity[] = {
 /* Called when systick fires */
 void sys_tick_handler(void) {
     system_millis++;
-    read_encoders();
-}
-
-static void read_encoders(void) {
-    int8_t enc_incr;
-    int16_t value;
-    struct RotaryEncoder* enc = encoders;
-
-    for (uint8_t i = 0; i < NUM_ENCODERS; i++, enc++) {
-        enc_incr = read_encoder(enc);
-
-        if (enc->cur_accel)
-            enc->cur_accel--;
-
-        if (enc_incr) {
-            enc->cur_accel = MIN(255, enc->cur_accel + enc->acceleration);
-            enc->counter = MIN(
-                enc->max_value * enc->pulses_per_dedent,
-                MAX(enc->min_value * enc->pulses_per_dedent,
-                    enc->counter + (1 + (enc->cur_accel >> ENC_ACCEL_THRESHOLD)) * enc_incr));
-            value = enc->counter / enc->pulses_per_dedent;
-
-            if (enc->value != value) {
-                enc->dirty = true;
-                enc->value = value;
-            }
-        }
-    }
-}
-
-/* returns change in encoder state (-1,0,1) */
-static int8_t read_encoder(struct RotaryEncoder *enc) {
-    uint16_t reading;
-
-    reading = GPIO_IDR(enc->port);
-    // shift previous state 2 bits to left
-    enc->readings <<= 2;
-
-    // Add current state to bit 0 and 1
-    if (reading & (1 << enc->pin_a))
-        enc->readings |= 1;
-    if (reading & (1 << enc->pin_b))
-        enc->readings |= 2;
-
-    return (enc_states[(enc->readings & 0x0f)]);
+    read_encoders(encoders);
 }
 
 /* Set up a timer to create 1mS ticks. */
@@ -192,7 +115,8 @@ static void usbmidi_send_event(usbd_device *usbd_dev, uint8_t ctrl, uint8_t valu
 
 int main(void) {
     usbd_device *usbd_dev;
-    struct RotaryEncoder* enc;
+    RotaryEncoder* enc;
+    HD44780* lcd;
 
     /* Clocks setup */
     rcc_clock_setup_hse_3v3(&rcc_hse_8mhz_3v3[RCC_CLOCK_3V3_168MHZ]);
@@ -222,17 +146,22 @@ int main(void) {
     usbd_register_set_config_callback(usbd_dev, usbmidi_set_config);
 
     /* Configure encoders */
-    encoders[0] = encoder_tmpl;
+    init_encoder(&encoders[0]);
     encoders[0].port = GPIOA;
     encoders[0].pin_a = 0;
     encoders[0].pin_b = 1;
     encoders[0].controller = 1;
 
-    encoders[1] = encoder_tmpl;
+    init_encoder(&encoders[1]);
     encoders[1].port = GPIOA;
     encoders[1].pin_a = 2;
     encoders[1].pin_b = 3;
     encoders[1].controller = 7;
+
+    init_HD44780(lcd);
+    lcd_init(lcd);
+
+    lcd_write(lcd, "Hello World");
 
     /* Start systick timer */
     systick_setup();
