@@ -8,10 +8,27 @@
 #include <assert.h>
 #include <stdbool.h>
 
+#include <libopencm3/stm32/gpio.h>
 #include <libopencm3/stm32/rcc.h>
 
 #include "hd44780.h"
 #include "sleep.h"
+
+struct HD44780 HD44780_Init = {
+    .port = GPIOD,
+    .pin_RS = GPIO2,
+    .pin_EN = GPIO1,
+    .pin_D4 = GPIO6,
+    .pin_D5 = GPIO5,
+    .pin_D6 = GPIO4,
+    .pin_D7 = GPIO3,
+    .width = 16,
+    .lines = 2,
+    .displaycontrol = LCD_DISPLAYON | LCD_CURSOROFF | LCD_BLINKOFF,
+    .displaymode = LCD_ENTRYLEFT | LCD_ENTRYSHIFTDECREMENT,
+    .display_functions = LCD_4BITMODE | LCD_1LINE | LCD_5X8DOTS,
+    .row_offsets = {0x00, 0x40, 0x14, 0x54}
+};
 
 
 /*
@@ -171,7 +188,7 @@ void lcd_set_autoscroll(struct HD44780* lcd, bool enable) {
 
 void lcd_place_cursor(struct HD44780* lcd, uint8_t col, uint8_t row) {
     /* Set the cursor the given column and row. */
-    lcd_send_command(lcd, LCD_SETDDRAMADDR | col + lcd->row_offsets[row]);
+    lcd_send_command(lcd, LCD_SETDDRAMADDR | (col + lcd->row_offsets[row]));
 }
 
 
