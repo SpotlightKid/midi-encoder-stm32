@@ -8,7 +8,6 @@
 
 #include <stdint.h>
 
-
 /* Timing constants */
 #define E_PULSE 1
 #define E_DELAY 50
@@ -57,7 +56,7 @@
 
 
 /* Interface to a HD44780 LCD controller in 4-bit mode. */
-struct HD44780 {
+typedef struct HD44780 {
     uint32_t port;
     uint8_t pin_RS;
     uint8_t pin_EN;
@@ -76,23 +75,24 @@ struct HD44780 {
     uint8_t display_functions;
     // memory offsets for display lines
     uint8_t row_offsets[4];
-};
+} HD44780;
 
-void lcd_clear(struct HD44780* lcd);
-void lcd_create_char(struct HD44780* lcd, uint8_t location, char* charmap);
-void lcd_home(struct HD44780* lcd);
-void lcd_init(struct HD44780* lcd);
-void lcd_place_cursor(struct HD44780* lcd, uint8_t col, uint8_t row);
-void lcd_pulse_enable(struct HD44780* lcd);
-void lcd_send_byte(struct HD44780* lcd, char byte, uint8_t mode);
-void lcd_send_command(struct HD44780* lcd, char command);
-static void lcd_send_nibble(struct HD44780* lcd, char nibble);
-void lcd_set_autoscroll(struct HD44780* lcd, bool enable);
-void lcd_set_blink(struct HD44780* lcd, bool enable);
-void lcd_set_cursor(struct HD44780* lcd, bool enable) ;
-void lcd_set_direction(struct HD44780* lcd, uint8_t direction);
-void lcd_set_display(struct HD44780* lcd, bool enable);
-void lcd_set_scroll(struct HD44780* lcd, uint8_t direction);
-void lcd_write(struct HD44780* lcd, char* message);
+void init_HD44780(HD44780 * lcd);
+void lcd_clear(HD44780* lcd);
+void lcd_create_char(HD44780* lcd, uint8_t location, char* charmap);
+void lcd_home(HD44780* lcd);
+void lcd_init(HD44780* lcd);
+void lcd_place_cursor(HD44780* lcd, uint8_t col, uint8_t row);
+void lcd_pulse_enable(HD44780* lcd);
+void lcd_send_byte(HD44780* lcd, char byte, uint8_t mode);
+void lcd_send_command(HD44780* lcd, char command);
+void lcd_send_nibble(HD44780* lcd, char nibble);
+void lcd_set_autoscroll(HD44780* lcd, bool enable);
+void lcd_set_blink(HD44780* lcd, bool enable);
+void lcd_set_cursor(HD44780* lcd, bool enable) ;
+void lcd_set_direction(HD44780* lcd, uint8_t direction);
+void lcd_set_display(HD44780* lcd, bool enable);
+void lcd_set_scroll(HD44780* lcd, uint8_t direction);
+void lcd_write(HD44780* lcd, char* message);
 
 #endif /* HD44780_H */

@@ -14,20 +14,24 @@
 #include "hd44780.h"
 #include "sleep.h"
 
-struct HD44780 HD44780_Init = {
-    .port = GPIOD,
-    .pin_RS = GPIO2,
-    .pin_EN = GPIO1,
-    .pin_D4 = GPIO6,
-    .pin_D5 = GPIO5,
-    .pin_D6 = GPIO4,
-    .pin_D7 = GPIO3,
-    .width = 16,
-    .lines = 2,
-    .displaycontrol = LCD_DISPLAYON | LCD_CURSOROFF | LCD_BLINKOFF,
-    .displaymode = LCD_ENTRYLEFT | LCD_ENTRYSHIFTDECREMENT,
-    .display_functions = LCD_4BITMODE | LCD_1LINE | LCD_5X8DOTS,
-    .row_offsets = {0x00, 0x40, 0x14, 0x54}
+
+void init_HD44780(HD44780 * lcd) {
+    lcd->port = GPIOD;
+    lcd->pin_RS = GPIO2;
+    lcd->pin_EN = GPIO1;
+    lcd->pin_D4 = GPIO6;
+    lcd->pin_D5 = GPIO5;
+    lcd->pin_D6 = GPIO4;
+    lcd->pin_D7 = GPIO3;
+    lcd->width = 16;
+    lcd->lines = 2;
+    lcd->displaycontrol = LCD_DISPLAYON | LCD_CURSOROFF | LCD_BLINKOFF;
+    lcd->displaymode = LCD_ENTRYLEFT | LCD_ENTRYSHIFTDECREMENT;
+    lcd->display_functions = LCD_4BITMODE | LCD_1LINE | LCD_5X8DOTS;
+    lcd->row_offsets[0] = 0x00;
+    lcd->row_offsets[1] = 0x40;
+    lcd->row_offsets[2] = 0x14;
+    lcd->row_offsets[3] = 0x54;
 };
 
 
@@ -50,7 +54,7 @@ struct HD44780 HD44780_Init = {
  *    S =   0 --> No shift
  *
  */
-void lcd_init(struct HD44780* lcd) {
+void lcd_init(HD44780* lcd) {
     usleep(50000);
 
     // enable periphal clock for GPIO port where LCD lines are attached
@@ -100,20 +104,20 @@ void lcd_init(struct HD44780* lcd) {
 }
 
 
-void lcd_clear(struct HD44780* lcd) {
+void lcd_clear(HD44780* lcd) {
     /* Clear the display. */
     lcd_send_command(lcd, LCD_CLEARDISPLAY);
     usleep(2000);
 }
 
 
-void lcd_home(struct HD44780* lcd) {
+void lcd_home(HD44780* lcd) {
     lcd_send_command(lcd, LCD_RETURNHOME);
     usleep(2000);
 }
 
 
-void lcd_set_display(struct HD44780* lcd, bool enable) {
+void lcd_set_display(HD44780* lcd, bool enable) {
     /* Turn the display on or off. */
     if (enable)
         lcd->displaycontrol |= LCD_DISPLAYON;
@@ -124,7 +128,7 @@ void lcd_set_display(struct HD44780* lcd, bool enable) {
 }
 
 
-void lcd_set_cursor(struct HD44780* lcd, bool enable) {
+void lcd_set_cursor(HD44780* lcd, bool enable) {
     /* Turn the underscore cursor on or off. */
     if (enable)
         lcd->displaycontrol |= LCD_CURSORON;
@@ -135,7 +139,7 @@ void lcd_set_cursor(struct HD44780* lcd, bool enable) {
 }
 
 
-void lcd_set_blink(struct HD44780* lcd, bool enable) {
+void lcd_set_blink(HD44780* lcd, bool enable) {
     /* Turn the blinking cursor on or off. */
     if (enable)
         lcd->displaycontrol |= LCD_BLINKON;
@@ -146,7 +150,7 @@ void lcd_set_blink(struct HD44780* lcd, bool enable) {
 }
 
 
-void lcd_set_scroll(struct HD44780* lcd, uint8_t direction) {
+void lcd_set_scroll(HD44780* lcd, uint8_t direction) {
     assert(direction == LCD_MOVERIGHT || direction == LCD_MOVELEFT);
 
     /* Scroll the display without changing the RAM. */
@@ -154,7 +158,7 @@ void lcd_set_scroll(struct HD44780* lcd, uint8_t direction) {
 }
 
 
-void lcd_set_direction(struct HD44780* lcd, uint8_t direction) {
+void lcd_set_direction(HD44780* lcd, uint8_t direction) {
     assert(direction == LCD_ENTRYRIGHT || direction == LCD_ENTRYLEFT);
 
     /* Set text flow direction to left-to-right or right-to-left. */
@@ -176,7 +180,7 @@ void lcd_set_direction(struct HD44780* lcd, uint8_t direction) {
  * position to the right reps. left, to make space for it.
  *
  */
-void lcd_set_autoscroll(struct HD44780* lcd, bool enable) {
+void lcd_set_autoscroll(HD44780* lcd, bool enable) {
     if (enable)
         lcd->displaymode |= LCD_ENTRYSHIFTINCREMENT;
     else
@@ -186,7 +190,7 @@ void lcd_set_autoscroll(struct HD44780* lcd, bool enable) {
 }
 
 
-void lcd_place_cursor(struct HD44780* lcd, uint8_t col, uint8_t row) {
+void lcd_place_cursor(HD44780* lcd, uint8_t col, uint8_t row) {
     /* Set the cursor the given column and row. */
     lcd_send_command(lcd, LCD_SETDDRAMADDR | (col + lcd->row_offsets[row]));
 }
@@ -200,7 +204,7 @@ void lcd_place_cursor(struct HD44780* lcd, uint8_t col, uint8_t row) {
  *        LCD_CHAR for character
  *
  */
-void lcd_send_byte(struct HD44780* lcd, char byte, uint8_t mode) {
+void lcd_send_byte(HD44780* lcd, char byte, uint8_t mode) {
     assert(mode == LCD_CHR || mode == LCD_CMD);
 
     if (mode == LCD_CMD)
@@ -213,13 +217,13 @@ void lcd_send_byte(struct HD44780* lcd, char byte, uint8_t mode) {
 }
 
 
-void lcd_send_command(struct HD44780* lcd, char command) {
+void lcd_send_command(HD44780* lcd, char command) {
     lcd_send_byte(lcd, command, LCD_CMD);
 }
 
 
 /* Write message to given row. */
-void lcd_write(struct HD44780* lcd, char* message) {
+void lcd_write(HD44780* lcd, char* message) {
     while (message)
         lcd_send_byte(lcd, *message++, LCD_CHR);
 }
@@ -232,7 +236,7 @@ void lcd_write(struct HD44780* lcd, char* message) {
  * There are 8 locations, 0-7
  *
  */
-void lcd_create_char(struct HD44780* lcd, uint8_t location, char* charmap) {
+void lcd_create_char(HD44780* lcd, uint8_t location, char* charmap) {
     lcd_send_command(lcd, LCD_SETCGRAMADDR | ((location & 0x7) << 3));
 
     while(charmap)
@@ -242,7 +246,7 @@ void lcd_create_char(struct HD44780* lcd, uint8_t location, char* charmap) {
 
 /* internal helper methods */
 /* Pulse the EN pin, by setting it low, then high, then low again. */
-void lcd_pulse_enable(struct HD44780* lcd) {
+void lcd_pulse_enable(HD44780* lcd) {
     gpio_clear(lcd->port, lcd->pin_EN);
     usleep(E_PULSE);
     gpio_set(lcd->port, lcd->pin_EN);
@@ -254,7 +258,7 @@ void lcd_pulse_enable(struct HD44780* lcd) {
 
 
 /* Send a nibble (4 bits) by setting data pins D4-7 and pulsing EN. */
-static void lcd_send_nibble(struct HD44780* lcd, char nibble) {
+void lcd_send_nibble(HD44780* lcd, char nibble) {
     if (nibble & 1)
         gpio_set(lcd->port, lcd->pin_D4);
     else
