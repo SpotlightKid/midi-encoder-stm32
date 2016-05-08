@@ -1,5 +1,5 @@
 /*
- * HD44780 display controller library for linopencm3
+ * HD44780 display controller library for libopencm3
  *
  */
 
@@ -92,7 +92,7 @@ void lcd_set_blink(HD44780* lcd, bool enable);
 void lcd_set_cursor(HD44780* lcd, bool enable) ;
 void lcd_set_direction(HD44780* lcd, uint8_t direction);
 void lcd_set_display(HD44780* lcd, bool enable);
-void lcd_set_scroll(HD44780* lcd, uint8_t direction);
+void lcd_scroll(HD44780* lcd, uint8_t direction);
 void lcd_write(HD44780* lcd, char* message);
 
 #endif /* HD44780_H */

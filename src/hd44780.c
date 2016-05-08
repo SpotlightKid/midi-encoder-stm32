@@ -150,7 +150,7 @@ void lcd_set_blink(HD44780* lcd, bool enable) {
 }
 
 
-void lcd_set_scroll(HD44780* lcd, uint8_t direction) {
+void lcd_scroll(HD44780* lcd, uint8_t direction) {
     assert(direction == LCD_MOVERIGHT || direction == LCD_MOVELEFT);
 
     /* Scroll the display without changing the RAM. */
