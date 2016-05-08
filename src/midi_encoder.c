@@ -14,6 +14,7 @@
 #include "rotary_encoder.h"
 #include "midi_encoder.h"
 #include "hd44780.h"
+#include "sleep.h"
 
 /* monotonically increasing number of milliseconds from reset
  * overflows every 49 days if you're wondering
@@ -74,6 +75,13 @@ static void systick_setup(void) {
     /* this done last */
     systick_interrupt_enable();
 }
+
+/* sleep for delay milliseconds */
+static void msleep(uint32_t delay) {
+    uint32_t wake = system_millis + delay;
+    while (wake > system_millis);
+}
+
 
 /* USB stuff */
 
@@ -162,11 +170,17 @@ int main(void) {
     lcd_init(&lcd);
 
     lcd_clear(&lcd);
-    lcd_home(&lcd);
-    lcd_write(&lcd, "Hello World");
+    lcd_write(&lcd, " MIDI Encoders  ");
 
     /* Start systick timer */
     systick_setup();
+
+    msleep(2000);
+
+    for (uint8_t i = 0; i < 40; i++) {
+        lcd_scroll(&lcd, LCD_MOVERIGHT);
+        msleep(250);
+    }
 
     /* event loop */
     while (1) {
