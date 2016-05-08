@@ -1,4 +1,4 @@
-#define AHB_CLOCK_MHZ 168000000
+#include "sleep.h"
 
 /* Delay by (sleep) ticks processor ticks */
 void sleep(int ticks) {
