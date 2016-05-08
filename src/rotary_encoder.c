@@ -39,11 +39,11 @@ void init_encoder(RotaryEncoder* enc) {
 };
 
 
-void read_encoders(RotaryEncoder* enc) {
+void read_encoders(RotaryEncoder* enc, uint8_t num_enc) {
     int8_t enc_incr;
     int16_t value;
 
-    for (uint8_t i = 0; i < NUM_ENCODERS; i++, enc++) {
+    for (uint8_t i = 0; i < num_enc; i++, enc++) {
         enc_incr = read_encoder(enc);
 
         if (enc->cur_accel)

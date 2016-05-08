@@ -7,7 +7,6 @@
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
 #define ENC_ACCEL_THRESHOLD 5
-#define NUM_ENCODERS 2
 
 typedef struct RotaryEncoder {
     uint32_t port;
@@ -27,6 +26,6 @@ typedef struct RotaryEncoder {
 
 void init_encoder(RotaryEncoder* enc);
 int8_t read_encoder(RotaryEncoder* enc);
-void read_encoders(RotaryEncoder* enc);
+void read_encoders(RotaryEncoder* enc, uint8_t num_enc);
 
 #endif  /* ROTARY_ENCODER_H */

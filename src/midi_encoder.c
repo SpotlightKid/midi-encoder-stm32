@@ -32,6 +32,7 @@ static const char * usb_strings[] = {
 uint8_t usbd_control_buffer[128];
 
 /* array of rotary encoder structs */
+#define NUM_ENCODERS 2
 RotaryEncoder encoders[NUM_ENCODERS];
 
 /* SysEx identity message, preformatted with correct USB framing information */
@@ -61,7 +62,7 @@ const uint8_t sysex_identity[] = {
 /* Called when systick fires */
 void sys_tick_handler(void) {
     system_millis++;
-    read_encoders(encoders);
+    read_encoders(encoders, NUM_ENCODERS);
 }
 
 /* Set up a timer to create 1mS ticks. */
@@ -115,8 +116,7 @@ static void usbmidi_send_event(usbd_device *usbd_dev, uint8_t ctrl, uint8_t valu
 
 int main(void) {
     usbd_device *usbd_dev;
-    RotaryEncoder* enc;
-    HD44780* lcd;
+    HD44780 lcd;
 
     /* Clocks setup */
     rcc_clock_setup_hse_3v3(&rcc_hse_8mhz_3v3[RCC_CLOCK_3V3_168MHZ]);
@@ -158,10 +158,12 @@ int main(void) {
     encoders[1].pin_b = 3;
     encoders[1].controller = 7;
 
-    //init_HD44780(lcd);
-    //lcd_init(lcd);
+    init_HD44780(&lcd);
+    lcd_init(&lcd);
 
-    //lcd_write(lcd, "Hello World");
+    lcd_clear(&lcd);
+    lcd_home(&lcd);
+    lcd_write(&lcd, "Hello World");
 
     /* Start systick timer */
     systick_setup();
@@ -170,11 +172,11 @@ int main(void) {
     while (1) {
         usbd_poll(usbd_dev);
 
-        enc = encoders;
-        for (uint8_t i = 0; i < NUM_ENCODERS; i++, enc++) {
-            if (enc->dirty) {
-                usbmidi_send_event(usbd_dev, enc->controller, enc->value);
-                enc->dirty = false;
+        for (uint8_t i = 0; i < NUM_ENCODERS; i++) {
+            if (encoders[i].dirty) {
+                usbmidi_send_event(usbd_dev, encoders[i].controller,
+                                   encoders[i].value);
+                encoders[i].dirty = false;
             }
         }
     }
