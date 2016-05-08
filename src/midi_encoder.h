@@ -31,7 +31,7 @@ struct RotaryEncoder {
     bool dirty;
 };
 
-static struct RotaryEncoder encoder_tmpl = {
+const struct RotaryEncoder encoder_tmpl = {
     .port = GPIOA,
     .pin_a = 0,
     .pin_b = 1,
@@ -111,6 +111,5 @@ static void usbmidi_send_event(usbd_device *usbd_dev, uint8_t ctrl, uint8_t valu
 static void systick_setup(void);
 static void read_encoders(void);
 static int8_t read_encoder(struct RotaryEncoder* enc);
-
 
 #endif  /* MIDI_ENCODER_H */
