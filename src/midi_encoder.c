@@ -158,10 +158,10 @@ int main(void) {
     encoders[1].pin_b = 3;
     encoders[1].controller = 7;
 
-    init_HD44780(lcd);
-    lcd_init(lcd);
+    //init_HD44780(lcd);
+    //lcd_init(lcd);
 
-    lcd_write(lcd, "Hello World");
+    //lcd_write(lcd, "Hello World");
 
     /* Start systick timer */
     systick_setup();
