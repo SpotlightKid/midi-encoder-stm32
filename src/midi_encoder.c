@@ -159,7 +159,7 @@ int main(void) {
     /* Start systick timer */
     systick_setup();
 
-    /* event loop (polling) */
+    /* event loop */
     while (1) {
         usbd_poll(usbd_dev);
 
