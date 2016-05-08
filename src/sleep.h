@@ -1,7 +1,7 @@
 #ifndef SLEEP_H
 #define SLEEP_H
 
-#define AHB_CLOCK_MHZ 168000000
+#define AHB_CLOCK_MHZ 168
 
 /* Delay by (sleep) ticks processor ticks */
 void sleep(int ticks);
