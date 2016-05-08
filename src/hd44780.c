@@ -224,7 +224,7 @@ void lcd_send_command(HD44780* lcd, char command) {
 
 /* Write message to given row. */
 void lcd_write(HD44780* lcd, char* message) {
-    while (message)
+    while (*message)
         lcd_send_byte(lcd, *message++, LCD_CHR);
 }
 
@@ -239,7 +239,7 @@ void lcd_write(HD44780* lcd, char* message) {
 void lcd_create_char(HD44780* lcd, uint8_t location, char* charmap) {
     lcd_send_command(lcd, LCD_SETCGRAMADDR | ((location & 0x7) << 3));
 
-    while(charmap)
+    while(*charmap)
         lcd_send_byte(lcd, *charmap++, LCD_CHR);
 }
 
