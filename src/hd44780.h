@@ -58,12 +58,12 @@
 /* Interface to a HD44780 LCD controller in 4-bit mode. */
 typedef struct HD44780 {
     uint32_t port;
-    uint8_t pin_RS;
-    uint8_t pin_EN;
-    uint8_t pin_D4;
-    uint8_t pin_D5;
-    uint8_t pin_D6;
-    uint8_t pin_D7;
+    uint16_t pin_RS;
+    uint16_t pin_EN;
+    uint16_t pin_D4;
+    uint16_t pin_D5;
+    uint16_t pin_D6;
+    uint16_t pin_D7;
     // Maximum characters per line
     uint8_t width;
     // Number of display rows
