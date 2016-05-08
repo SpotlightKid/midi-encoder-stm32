@@ -2,6 +2,8 @@
 
 BINARY = midi_encoder
 
+OBJS = hd44780.o sleep.o
+
 OPENCM3_DIR=../libopencm3
 LDSCRIPT = ../stm32f4-discovery.ld
 
